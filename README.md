@@ -77,9 +77,9 @@ Full analysis in the [blog series](https://faunaris-ai.com/blog/dspy-langgraph-c
 
 ## Author
 
-**Soufiane Aazizi** — Lead AI Engineer | [Faunaris AI](https://faunaris.ai)
+**Soufiane Aazizi** — Lead AI Engineer | [Faunaris AI](https://faunaris-ai.com)
 
-12+ years in quantitative finance and AI engineering. Building production LLM systems across pharma, banking, and audit.
+Building production LLM systems across pharma, banking, retail, and audit.
 
 ## License
 
