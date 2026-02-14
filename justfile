@@ -61,7 +61,7 @@ all company="Apple":
 # -------------------------------------------------------------------
 
 # Auto-fix lint issues
-lint-fix:
+format:
 	@echo "🔧 Auto-fixing lint issues..."
 	{{VENV_PYTHON}} -m ruff check --fix src
 	{{VENV_PYTHON}} -m ruff format src

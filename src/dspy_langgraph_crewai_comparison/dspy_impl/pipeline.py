@@ -1,13 +1,16 @@
 import dspy
-from common.models import structural_check
-from common.tools import web_search
-from dspy_impl.signatures import (
+
+from dspy_langgraph_crewai_comparison.common.tools import web_search
+from dspy_langgraph_crewai_comparison.dspy_impl.signature import (
     ResearchCompany,
     WriteAnalystSummary,
     WriteAnalystSummaryWithFeedback,
     ReviewSummary,
 )
+from src.dspy_langgraph_crewai_comparison.common.models import structural_check
+
 from loguru import logger
+
 
 class CompanyResearchPipeline(dspy.Module):
     """Full pipeline: Research → Write → (structural check → Review → Rewrite loop)."""

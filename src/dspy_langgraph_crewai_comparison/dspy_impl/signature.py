@@ -1,5 +1,10 @@
 import dspy
-from common.models import CompanyFacts, AnalystSummary, ReviewResult
+
+from dspy_langgraph_crewai_comparison.common.models import (
+    CompanyFacts,
+    AnalystSummary,
+    ReviewResult,
+)
 
 
 class ResearchCompany(dspy.Signature):
@@ -8,8 +13,12 @@ class ResearchCompany(dspy.Signature):
     financial highlights, key events, and source URLs."""
 
     company_name: str = dspy.InputField(desc="Name of the company to research")
-    search_results: str = dspy.InputField(desc="Raw web search results to extract facts from")
-    company_facts: CompanyFacts = dspy.OutputField(desc="Structured company research facts")
+    search_results: str = dspy.InputField(
+        desc="Raw web search results to extract facts from"
+    )
+    company_facts: CompanyFacts = dspy.OutputField(
+        desc="Structured company research facts"
+    )
 
 
 class WriteAnalystSummary(dspy.Signature):
@@ -17,7 +26,9 @@ class WriteAnalystSummary(dspy.Signature):
     Maximum 200 words. Every claim must trace back to a source.
     Include key risks and a one-sentence outlook (bullish/bearish/neutral)."""
 
-    company_facts: CompanyFacts = dspy.InputField(desc="Structured facts from the researcher")
+    company_facts: CompanyFacts = dspy.InputField(
+        desc="Structured facts from the researcher"
+    )
     analyst_summary: AnalystSummary = dspy.OutputField(desc="Concise analyst summary")
 
 
@@ -25,8 +36,12 @@ class WriteAnalystSummaryWithFeedback(dspy.Signature):
     """Rewrite an analyst summary incorporating reviewer feedback.
     Fix the specific issues raised. Maximum 200 words."""
 
-    company_facts: CompanyFacts = dspy.InputField(desc="Structured facts from the researcher")
-    previous_summary: str = dspy.InputField(desc="The previous summary that needs improvement")
+    company_facts: CompanyFacts = dspy.InputField(
+        desc="Structured facts from the researcher"
+    )
+    previous_summary: str = dspy.InputField(
+        desc="The previous summary that needs improvement"
+    )
     feedback: str = dspy.InputField(desc="Specific feedback from the reviewer")
     analyst_summary: AnalystSummary = dspy.OutputField(desc="Improved analyst summary")
 
@@ -40,4 +55,6 @@ class ReviewSummary(dspy.Signature):
 
     analyst_summary: AnalystSummary = dspy.InputField(desc="The summary to evaluate")
     company_facts: CompanyFacts = dspy.InputField(desc="Source facts to verify against")
-    review: ReviewResult = dspy.OutputField(desc="Detailed evaluation with claim verifications")
+    review: ReviewResult = dspy.OutputField(
+        desc="Detailed evaluation with claim verifications"
+    )

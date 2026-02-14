@@ -10,10 +10,13 @@ Requires ANTHROPIC_API_KEY or OPENAI_API_KEY in environment.
 
 import sys
 import dspy
-from src.dspy_langgraph_crewai_comparison.dspy_impl.pipeline import CompanyResearchPipeline
+from src.dspy_langgraph_crewai_comparison.dspy_impl.pipeline import (
+    CompanyResearchPipeline,
+)
 from loguru import logger
 
-def configure_lm():
+
+def configure_lm() -> dspy.LM:
     """Configure DSPy language model. Tries Anthropic first, then OpenAI."""
     import os
 
@@ -40,7 +43,7 @@ def main():
     logger.info(f"  Target: {company}")
     logger.info(f"{'=' * 60}\n")
 
-    lm = configure_lm()
+    configure_lm()
     pipeline = CompanyResearchPipeline(max_iterations=3)
 
     logger.info(f"[1/3] Researching {company}...")
