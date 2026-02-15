@@ -8,13 +8,18 @@ from dspy_langgraph_crewai_comparison.common.models import (
 
 
 class ResearchCompany(dspy.Signature):
-    """Research a public company using web search results and extract
-    structured facts with source attribution. Return recent news,
-    financial highlights, key events, and source URLs."""
+    """Research a public company and extract structured facts.
+
+    You have access to tools: search, read_skill_instructions,
+    read_reference, run_script, read_asset, check_structure.
+
+    Start by reading the skill instructions to understand the research
+    methodology, then use search and other tools as needed.
+    Always check_structure before finalizing your output."""
 
     company_name: str = dspy.InputField(desc="Name of the company to research")
-    search_results: str = dspy.InputField(
-        desc="Raw web search results to extract facts from"
+    skill_metadata: str = dspy.InputField(
+        desc="Available skill metadata — read the skill instructions for full details"
     )
     company_facts: CompanyFacts = dspy.OutputField(
         desc="Structured company research facts"
@@ -32,26 +37,11 @@ class WriteAnalystSummary(dspy.Signature):
     analyst_summary: AnalystSummary = dspy.OutputField(desc="Concise analyst summary")
 
 
-class WriteAnalystSummaryWithFeedback(dspy.Signature):
-    """Rewrite an analyst summary incorporating reviewer feedback.
-    Fix the specific issues raised. Maximum 200 words."""
-
-    company_facts: CompanyFacts = dspy.InputField(
-        desc="Structured facts from the researcher"
-    )
-    previous_summary: str = dspy.InputField(
-        desc="The previous summary that needs improvement"
-    )
-    feedback: str = dspy.InputField(desc="Specific feedback from the reviewer")
-    analyst_summary: AnalystSummary = dspy.OutputField(desc="Improved analyst summary")
-
-
 class ReviewSummary(dspy.Signature):
     """Evaluate an analyst summary against the source facts.
-    For each factual claim in the summary, verify it against the sources.
-    Check which expected facets are covered (news, financials, risks, outlook, events).
-    Rate conciseness from 1 (verbose) to 5 (tight).
-    Approve only if accuracy_ratio >= 0.8 and completeness_ratio >= 0.8."""
+    For each factual claim, verify it against sources.
+    Check facet coverage (news, financials, risks, outlook, events).
+    Rate conciseness 1-5. Approve if accuracy >= 0.8 and completeness >= 0.8."""
 
     analyst_summary: AnalystSummary = dspy.InputField(desc="The summary to evaluate")
     company_facts: CompanyFacts = dspy.InputField(desc="Source facts to verify against")

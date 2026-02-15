@@ -1,9 +1,6 @@
 from pydantic import BaseModel, Field
 
 
-# ── Pipeline data models ─────────────────────────────────
-
-
 class CompanyFacts(BaseModel):
     """Structured output from the Researcher step."""
 
@@ -24,28 +21,6 @@ class AnalystSummary(BaseModel):
     key_risks: list[str]
     outlook: str = Field(description="One sentence: bullish, bearish, or neutral")
     confidence_score: float = Field(ge=0, le=1)
-
-
-# ── Pre-validation gate (no LLM needed) ──────────────────
-
-
-def structural_check(summary: AnalystSummary, facts: CompanyFacts) -> list[str]:
-    """Cheap checks before calling the LLM judge.
-    Returns a list of issues. Empty list = pass."""
-    issues = []
-    word_count = len(summary.summary_text.split())
-    if word_count > 200:
-        issues.append(f"Summary too long: {word_count} words (max 200)")
-    if not summary.key_risks:
-        issues.append("Missing key_risks")
-    if not summary.outlook:
-        issues.append("Missing outlook")
-    if not facts.sources:
-        issues.append("No sources provided by researcher")
-    return issues
-
-
-# ── LLM judge models ─────────────────────────────────────
 
 
 class ClaimVerification(BaseModel):
@@ -79,3 +54,50 @@ class ReviewResult(BaseModel):
     feedback: str
     issues: list[str]
     approved: bool
+
+
+def structural_check(
+    company_name: str,
+    sector: str,
+    recent_news: str,
+    financial_highlights: str,
+    key_events: str,
+    sources: str,
+) -> str:
+    """Check the structure of CompanyFacts before finalizing.
+    Pass each field as a string. Lists should be comma-separated items.
+    Returns 'PASS' if all checks pass, or a description of issues found."""
+    issues = []
+
+    # Parse comma-separated strings into lists
+    news_items = (
+        [x.strip() for x in recent_news.split(",") if x.strip()] if recent_news else []
+    )
+    fin_items = (
+        [x.strip() for x in financial_highlights.split(",") if x.strip()]
+        if financial_highlights
+        else []
+    )
+    event_items = (
+        [x.strip() for x in key_events.split(",") if x.strip()] if key_events else []
+    )
+    source_items = (
+        [x.strip() for x in sources.split(",") if x.strip()] if sources else []
+    )
+
+    if not company_name.strip():
+        issues.append("company_name is empty")
+    if not sector.strip():
+        issues.append("sector is empty")
+    if len(news_items) < 3:
+        issues.append(f"Need at least 3 recent_news items, got {len(news_items)}")
+    if len(fin_items) < 2:
+        issues.append(f"Need at least 2 financial_highlights, got {len(fin_items)}")
+    if len(event_items) < 1:
+        issues.append(f"Need at least 1 key_event, got {len(event_items)}")
+    if len(source_items) < 1:
+        issues.append(f"Need at least 1 source URL, got {len(source_items)}")
+
+    if issues:
+        return "ISSUES FOUND: " + "; ".join(issues)
+    return "PASS — all structural checks passed"

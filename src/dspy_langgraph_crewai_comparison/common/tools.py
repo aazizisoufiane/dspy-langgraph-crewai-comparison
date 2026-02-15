@@ -1,5 +1,13 @@
 """Mock web search tool for prototyping.
-Returns realistic fake data. Will be replaced by MCP servers in Part 3."""
+Returns different quality results based on query specificity.
+Will be replaced by MCP servers in Part 3.
+
+Query tiers:
+- Vague query ("Apple") → news only, no financials
+- Targeted query ("Apple quarterly earnings") → full results
+- Sector-specific query from search-strategies.md → full results + bonus
+- Bad source included to test validate_sources.py
+"""
 
 MOCK_DATA = {
     "apple": {
@@ -20,13 +28,21 @@ MOCK_DATA = {
             "Opened new R&D center in Munich focused on wireless chip design",
             "Announced $110B share buyback program, largest in corporate history",
         ],
-        "sources": [
+        "sources_good": [
             "https://investor.apple.com/quarterly-results/2026-q1",
             "https://www.reuters.com/technology/apple-q1-2026-earnings",
             "https://www.bloomberg.com/news/apple-intelligence-eu-expansion",
-            "https://www.cnbc.com/apple-vision-pro-2-rumors",
+        ],
+        "sources_bad": [
+            "not-a-valid-url",
+        ],
+        "bonus": [
+            "R&D spending: $7.8B in Q1 2026, up 11% YoY",
+            "App Store developer payouts exceeded $100B cumulative in 2025",
         ],
         "sector": "Technology",
+        "keywords_targeted": ["earnings", "quarterly", "revenue", "financial"],
+        "keywords_sector": ["AI strategy", "product launch", "R&D spending"],
     },
     "tesla": {
         "news": [
@@ -46,13 +62,27 @@ MOCK_DATA = {
             "Optimus humanoid robot demo at shareholder meeting — walking and sorting tasks",
             "Giga Mexico construction resumed after regulatory approval",
         ],
-        "sources": [
+        "sources_good": [
             "https://ir.tesla.com/quarterly-results/2025-q4",
             "https://www.reuters.com/business/autos/tesla-q4-deliveries",
             "https://www.bloomberg.com/news/tesla-semi-volume-production",
-            "https://electrek.co/tesla-fsd-v13-milestone",
+        ],
+        "sources_bad": [
+            "htp://electrek.co/broken-link",
+        ],
+        "bonus": [
+            "Supercharger network: 65,000+ stalls globally, up 30% YoY",
+            "Tesla Insurance now available in 14 states",
         ],
         "sector": "Automotive / Energy",
+        "keywords_targeted": [
+            "earnings",
+            "quarterly",
+            "revenue",
+            "delivery",
+            "deliveries",
+        ],
+        "keywords_sector": ["production capacity", "delivery numbers", "regulatory"],
     },
     "nvidia": {
         "news": [
@@ -72,37 +102,89 @@ MOCK_DATA = {
             "Expanded sovereign AI partnerships: Saudi Arabia, UAE, India, France",
             "Jensen Huang keynote at GTC 2026 — 'physical AI' and robotics roadmap",
         ],
-        "sources": [
+        "sources_good": [
             "https://investor.nvidia.com/quarterly-results/fy2026-q4",
             "https://www.reuters.com/technology/nvidia-q4-fy2026-earnings",
             "https://www.bloomberg.com/news/nvidia-blackwell-ultra-announcement",
-            "https://www.cnbc.com/nvidia-export-controls-impact",
+        ],
+        "sources_bad": [
+            "www.cnbc.com/nvidia-export-controls",
+        ],
+        "bonus": [
+            "CUDA developer ecosystem: 5M+ developers worldwide",
+            "Nvidia DGX Cloud partnerships with AWS, Azure, and GCP",
         ],
         "sector": "Technology / Semiconductors",
+        "keywords_targeted": ["earnings", "quarterly", "revenue", "data center"],
+        "keywords_sector": ["GPU announcement", "chip export", "data center revenue"],
     },
 }
 
 
+def _query_tier(query_lower: str, data: dict) -> str:
+    """Determine query quality: 'vague', 'targeted', or 'sector'."""
+    for kw in data["keywords_sector"]:
+        if kw.lower() in query_lower:
+            return "sector"
+    for kw in data["keywords_targeted"]:
+        if kw.lower() in query_lower:
+            return "targeted"
+    return "vague"
+
+
 def web_search(query: str) -> str:
-    """Mock web search. Returns formatted results for known companies.
+    """Mock web search with query-quality sensitivity.
+
+    - Vague queries → news only, no financials, includes bad source
+    - Targeted queries → news + financials + events, includes bad source
+    - Sector-specific queries → full results + bonus data, clean sources
+
     In Part 3, this will be replaced by a real MCP web_search tool."""
     query_lower = query.lower()
 
     for company, data in MOCK_DATA.items():
         if company in query_lower:
+            tier = _query_tier(query_lower, data)
             results = []
+
+            # --- News: always returned ---
             results.append(f"=== Recent News for {company.title()} ===")
             for item in data["news"]:
                 results.append(f"- {item}")
-            results.append("\n=== Financial Highlights ===")
-            for item in data["financials"]:
-                results.append(f"- {item}")
-            results.append("\n=== Key Events ===")
-            for item in data["events"]:
-                results.append(f"- {item}")
+
+            # --- Financials: only for targeted/sector ---
+            if tier in ("targeted", "sector"):
+                results.append("\n=== Financial Highlights ===")
+                for item in data["financials"]:
+                    results.append(f"- {item}")
+
+            # --- Events: only for targeted/sector ---
+            if tier in ("targeted", "sector"):
+                results.append("\n=== Key Events ===")
+                for item in data["events"]:
+                    results.append(f"- {item}")
+
+            # --- Bonus: only for sector-specific queries ---
+            if tier == "sector":
+                results.append("\n=== Additional Insights ===")
+                for item in data["bonus"]:
+                    results.append(f"- {item}")
+
+            # --- Sources: bad source included for vague/targeted ---
             results.append("\n=== Sources ===")
-            for url in data["sources"]:
+            for url in data["sources_good"]:
                 results.append(f"- {url}")
+            if tier != "sector":
+                for url in data["sources_bad"]:
+                    results.append(f"- {url}")
+
+            # --- Hint for vague queries ---
+            if tier == "vague":
+                results.append(
+                    "\n⚠️ Limited results. Try a more specific query "
+                    "(e.g., include 'quarterly earnings', 'revenue', or sector-specific terms)."
+                )
+
             return "\n".join(results)
 
     return f"No results found for: {query}"

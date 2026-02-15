@@ -1,0 +1,36 @@
+{
+  "sectors": [
+    {
+      "name": "Technology",
+      "subsectors": ["Software", "Hardware", "Cloud Services", "AI/ML", "Consumer Electronics"]
+    },
+    {
+      "name": "Technology / Semiconductors",
+      "subsectors": ["GPU/Accelerators", "Memory", "Foundry", "EDA", "Networking Chips"]
+    },
+    {
+      "name": "Automotive / Energy",
+      "subsectors": ["EV Manufacturing", "Energy Storage", "Autonomous Driving", "Solar"]
+    },
+    {
+      "name": "Financial Services",
+      "subsectors": ["Banking", "Insurance", "Asset Management", "Fintech", "Payments"]
+    },
+    {
+      "name": "Healthcare / Pharma",
+      "subsectors": ["Biotech", "Medical Devices", "Drug Manufacturing", "Digital Health"]
+    },
+    {
+      "name": "Consumer / Retail",
+      "subsectors": ["E-commerce", "Luxury", "Food & Beverage", "Apparel"]
+    },
+    {
+      "name": "Energy",
+      "subsectors": ["Oil & Gas", "Renewables", "Utilities", "Nuclear"]
+    },
+    {
+      "name": "Industrials",
+      "subsectors": ["Aerospace & Defense", "Construction", "Transportation", "Manufacturing"]
+    }
+  ]
+}
