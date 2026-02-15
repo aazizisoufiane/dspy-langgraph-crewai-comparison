@@ -4,10 +4,31 @@ A practitioner's comparison of three AI agent frameworks — not from docs, but 
 
 **The pipeline:** A Company Research Agent that searches the web, extracts structured facts, writes an analyst summary, reviews it with an LLM judge, and loops back if quality isn't good enough.
 
+## Pipeline Architecture
+```
+Input: "Apple"
+  │
+  ▼
+web_search(mock) ──▶ Researcher ──▶ Writer ──▶ structural_check()
+                     CompanyFacts    Summary         │
+                                                fail │ pass
+                                              ┌──────┤
+                                              │      ▼
+                                              │   Reviewer (LLM judge)
+                                              │      │
+                                              │  approved? ──yes──▶ Output
+                                              │      │ no
+                                              │      ▼
+                                              └── Rewriter (with feedback)
+                                                  (max 3 iterations)
+```
+
+**Two-stage evaluation:** `structural_check()` catches obvious failures (word count, missing fields) for free — the LLM judge only runs when structural checks pass. The judge verifies claims against sources, checks facet coverage, and rates conciseness. No vague 0-10 scores.
+
 **What makes this different:**
 - **MCP Integration** — each framework connected to real MCP servers, including [mcp-python-repl](https://pypi.org/project/mcp-python-repl/)
 - **Agent Skills** — structured agent capabilities using the [Agent Skills](https://agentskills.io) spec, with scripts, references, and multi-file navigation
-- **LLM-as-a-Judge** — decomposed evaluation (no vague 0-10 scores): claim verification, facet coverage, source-grounded accuracy
+- **LLM-as-a-Judge** — decomposed evaluation: claim verification, facet coverage, source-grounded accuracy
 - **DSPy GEPA optimization** — can prompt optimization fix the skill trigger reliability problem [Vercel identified](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals)?
 
 ## Blog Series
@@ -20,7 +41,6 @@ A practitioner's comparison of three AI agent frameworks — not from docs, but 
 | 4 | Evaluation, Optimization & Verdict | ⬜ Planned |
 
 ## Project Structure
-
 ```
 ├── common/                  # Shared across all frameworks
 │   ├── models.py            # Pydantic models (CompanyFacts, AnalystSummary, ReviewResult)
@@ -47,20 +67,18 @@ A practitioner's comparison of three AI agent frameworks — not from docs, but 
 ```
 
 ## Quick Start
-
 ```bash
 git clone https://github.com/aazizisoufiane/dspy-langgraph-crewai-comparison.git
 cd dspy-langgraph-crewai-comparison
 
-pip install -r requirements.txt
-
-# Set your API key
-export ANTHROPIC_API_KEY=sk-...
+cp .env.example .env         # add your API key
+uv sync                      # install dependencies
 
 # Run any implementation
-python -m dspy_impl.run "Apple"
-python -m langgraph_impl.run "Apple"
-python -m crewai_impl.run "Apple"
+just dspy "Apple"
+just langgraph "Apple"
+just crewai "Apple"
+just all "Apple"             # run all three
 ```
 
 ## Key Findings (Preview)
@@ -73,13 +91,13 @@ python -m crewai_impl.run "Apple"
 | LLM-as-a-Judge | First-class module | Manual node + prompt | Agent with reviewer role |
 | Prompt optimization | Built-in | None | None |
 
-Full analysis in the [blog series](https://faunaris-ai.com/blog/dspy-langgraph-crewai-part1).
+Full analysis in the [blog series](https://faunaris.ai/blog/dspy-langgraph-crewai-part1).
 
 ## Author
 
-**Soufiane Aazizi** — Lead AI Engineer | [Faunaris AI](https://faunaris-ai.com)
+**Soufiane Aazizi** — Lead AI Engineer | [Faunaris AI](https://faunaris.ai)
 
-Building production LLM systems across pharma, banking, retail, and audit.
+12+ years in quantitative finance and AI engineering. Building production LLM systems across pharma, banking, and audit.
 
 ## License
 
